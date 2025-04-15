@@ -9,7 +9,7 @@ import cv2
 import numpy
 import matplotlib.pyplot as plt
 
-def equalizaHist(canal):
+def mapeiaEqualizado(canal):
     qtd = 256 * [0]
     normalizados = 256 * [0]
     probabilidade = 256 * [0]
@@ -33,15 +33,19 @@ def equalizaHist(canal):
     for i in range(256):
         for j in range (0,i):
             acumulado[i] += probabilidade[j]
-    
-    plt.plot(acumulado)
-    plt.show()
-    
-    canalEqualizado = numpy.zeros((canal.shape[0], canal.shape[1]), dtype = numpy.uint8)
+            
     for x in range(256):
             final[x] = round(acumulado[x] * 255)
             print(acumulado[x])
             print(final[x])
+    
+    #plt.plot(acumulado)
+    #plt.show()
+    return final
+
+def equalizaHist(canal, final):
+    
+    canalEqualizado = numpy.zeros((canal.shape[0], canal.shape[1]), dtype = numpy.uint8)
     for i in range(0, canal.shape[0]):
         for j in range(0, canal.shape[1]):
             canalEqualizado[i][j] = final[canal[i][j]] 
@@ -82,12 +86,12 @@ def main():
                 canalCinza[x][y] = imagem[x][y].sum()//3
             
     histograma(canalCinza)
-    canalEqualizado = equalizaHist(canalCinza)
+    arrayEqualizado = mapeiaEqualizado(canalCinza)
+    canalEqualizado = equalizaHist(canalCinza, arrayEqualizado)
     histograma(canalEqualizado)
     cv2.imshow("Imagem", canalCinza)
     cv2.imshow("Imagem Equalizada", canalEqualizado)
     cv2.waitKey(0)
     
 
-main()
 
