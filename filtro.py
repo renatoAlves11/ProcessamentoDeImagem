@@ -2,6 +2,7 @@ import cv2
 import numpy
 import matplotlib.pyplot as plt
 from temp import geraCanalCinza 
+from filtroMedia import suavizaImg
 
 
 #Filtro  Laplaciano:
@@ -27,20 +28,47 @@ def convolucao(canal, filtro):
             
     return numpy.clip(canalFiltrado, 0, 255).astype(numpy.uint8)
 
-imagem = cv2.imread("mickeyhoho.jpg")
+def somaImgs (img1, img2, fatorK):
+    novoCanal = numpy.zeros((img1.shape[0], img1.shape[1]), dtype = numpy.uint8)
+    for i in range(img1.shape[0]):
+        for j in range(img1.shape[1]):
+            if (int(img1[i][j]) + fatorK * int(img2[i][j])) > 255:
+                novoCanal[i][j] = 255
+            else:
+                novoCanal[i][j] = img1[i][j] + img2[i][j] 
+    return novoCanal
+
+def subtraiImgs (img1, img2):
+    novoCanal = numpy.zeros((img1.shape[0], img1.shape[1]), dtype = numpy.uint8)
+    for i in range(img1.shape[0]):
+        for j in range(img1.shape[1]):
+            if int(img1[i][j]) - int(img2[i][j]) < 0:
+                novoCanal[i][j] = 0
+            else:
+                novoCanal[i][j] = img1[i][j] - img2[i][j] 
+    return novoCanal            
+
+def  filtroAltoReforço(img, fatorK):
+    canalSubtrai = suavizaImg(img, 5)
+    canalMascara = subtraiImgs(img, canalSubtrai)
+    novoCanal = somaImgs(img, canalMascara, fatorK)
+    return novoCanal
+
+imagem = cv2.imread("arvore1.jfif")
                 
 canalCinza = geraCanalCinza(imagem)
 
-filtro = numpy.array([[1,1,1],[1,-8, 1], [1, 1, 1]])
+canalAltoReforco = filtroAltoReforço(canalCinza, 3)
 
-filtro1 = numpy.array([[-2,-1,0],[-1,1, 1], [0, 1, 2]])
+# filtro = numpy.array([[1,1,1],[1,-8, 1], [1, 1, 1]])
 
-canalFiltrado = convolucao(canalCinza, filtro)
-canalFiltrado1 = convolucao(canalCinza, filtro1)
+# filtro1 = numpy.array([[-2,-1,0],[-1,1, 1], [0, 1, 2]])
+
+# canalFiltrado = convolucao(canalCinza, filtro)
+# canalFiltrado1 = convolucao(canalCinza, filtro1)
 
 cv2.imshow("Original", canalCinza)
-cv2.imshow("Filtrado", canalFiltrado)
-cv2.imshow("Filtrado1", canalFiltrado1)
+cv2.imshow("Alto reforço", canalAltoReforco)
             
 cv2.waitKey(0)
 
